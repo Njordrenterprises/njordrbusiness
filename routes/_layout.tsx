@@ -5,7 +5,7 @@ export default function Layout({ Component }: PageProps) {
 
   return (
     <div class="flex flex-col min-h-screen">
-      <header class="sticky top-0 bg-blue-600 text-white p-4">
+      <header class="sticky top-0 bg-blue-600 text-white p-4 z-50">
         <div class="container mx-auto flex justify-between items-center">
           <div class="flex items-center">
             <img src="/njordr.webp" alt="Njordr Logo" class="h-10 w-auto mr-2" />
@@ -20,7 +20,7 @@ export default function Layout({ Component }: PageProps) {
         </div>
       </header>
 
-      <main class="flex-grow">
+      <main class="flex-grow bg-gradient-to-b from-blue-100 via-white to-blue-100">
         <Component />
       </main>
 

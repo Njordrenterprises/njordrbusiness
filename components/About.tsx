@@ -1,6 +1,6 @@
 export default function About() {
   return (
-    <section id="about" class="bg-gray-100 py-16">
+    <section id="about" class="py-16 bg-white bg-opacity-80">
       <div class="container mx-auto px-4">
         <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">About Njörðr Exteriors</h2>
         <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
@@ -11,7 +11,7 @@ export default function About() {
               class="rounded-lg shadow-lg w-full h-auto object-cover"
             />
           </div>
-          <div class="md:w-1/2 space-y-6">
+          <div class="md:w-1/2 space-y-6 bg-white bg-opacity-90 p-6 rounded-lg">
             <p class="text-lg leading-relaxed">
               Welcome to Njörðr Exteriors, Winnipeg's premier choice for exterior renovations. We're not just contractors; we're your neighbors, committed to transforming homes across Manitoba with a personal touch and unparalleled craftsmanship.
             </p>
