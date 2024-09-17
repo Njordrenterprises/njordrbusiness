@@ -7,6 +7,8 @@ import * as $_layout from "./routes/_layout.tsx";
 import * as $contact from "./routes/contact.ts";
 import * as $index from "./routes/index.tsx";
 import * as $Contact from "./islands/Contact.tsx";
+import * as $Hero from "./islands/Hero.tsx";
+import * as $QuoteButton from "./islands/QuoteButton.ts";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -18,6 +20,8 @@ const manifest = {
   },
   islands: {
     "./islands/Contact.tsx": $Contact,
+    "./islands/Hero.tsx": $Hero,
+    "./islands/QuoteButton.ts": $QuoteButton,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

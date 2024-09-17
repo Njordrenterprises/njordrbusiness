@@ -1,4 +1,4 @@
-import Hero from "./Hero.tsx";
+import Hero from "../islands/Hero.tsx";
 import Services from "./Services.tsx";
 import About from "./About.tsx";
 import Contact from "../islands/Contact.tsx";
