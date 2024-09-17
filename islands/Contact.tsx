@@ -1,9 +1,38 @@
+import { useState } from "preact/hooks";
+
 export default function Contact() {
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+
+  const handleSubmit = async (e: Event) => {
+    e.preventDefault();
+    setStatus("loading");
+
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch("/contact", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        setStatus("success");
+        form.reset();
+      } else {
+        setStatus("error");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setStatus("error");
+    }
+  };
+
   return (
     <section id="contact" class="container mx-auto px-4 py-16">
       <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Contact Us</h2>
       <div class="max-w-2xl mx-auto">
-        <form class="space-y-4">
+        <form class="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label for="name" class="block mb-2 font-semibold">Name</label>
             <input
@@ -37,10 +66,17 @@ export default function Contact() {
           <button
             type="submit"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300"
+            disabled={status === "loading"}
           >
-            Send Message
+            {status === "loading" ? "Sending..." : "Send Message"}
           </button>
         </form>
+        {status === "success" && (
+          <p class="mt-4 text-green-600 font-semibold">Message sent successfully!</p>
+        )}
+        {status === "error" && (
+          <p class="mt-4 text-red-600 font-semibold">An error occurred. Please try again.</p>
+        )}
       </div>
     </section>
   );

@@ -4,17 +4,21 @@
 
 import * as $_app from "./routes/_app.tsx";
 import * as $_layout from "./routes/_layout.tsx";
+import * as $contact from "./routes/contact.ts";
 import * as $index from "./routes/index.tsx";
-
+import * as $Contact from "./islands/Contact.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
     "./routes/_app.tsx": $_app,
     "./routes/_layout.tsx": $_layout,
+    "./routes/contact.ts": $contact,
     "./routes/index.tsx": $index,
   },
-  islands: {},
+  islands: {
+    "./islands/Contact.tsx": $Contact,
+  },
   baseUrl: import.meta.url,
 } satisfies Manifest;
 
