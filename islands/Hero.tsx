@@ -45,7 +45,7 @@ export default function Hero() {
         <p class="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-6 sm:mb-8 lg:mb-10">Transform Your Home's Exterior in Winnipeg</p>
         <a
           id="quote-button"
-          href="#contact"
+          href="/estimate"
           class={`inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 text-2xl rounded-full transition duration-300 animate-pulse-glow quote-button ${isSticky ? 'quote-button-sticky' : ''}`}
         >
           <span class="relative z-10">Get a Free Quote</span>

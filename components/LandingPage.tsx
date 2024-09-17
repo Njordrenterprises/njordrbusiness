@@ -1,7 +1,7 @@
 import Hero from "../islands/Hero.tsx";
 import Services from "./Services.tsx";
 import About from "./About.tsx";
-import Contact from "../islands/Contact.tsx";
+
 
 export default function LandingPage() {
   return (
@@ -9,7 +9,7 @@ export default function LandingPage() {
       <Hero />
       <Services />
       <About />
-      <Contact />
+      
     </div>
   );
 }

@@ -4,24 +4,28 @@
 
 import * as $_app from "./routes/_app.tsx";
 import * as $_layout from "./routes/_layout.tsx";
+import * as $api_google_maps_key from "./routes/api/google-maps-key.tsx";
 import * as $contact from "./routes/contact.ts";
+import * as $estimate from "./routes/estimate.tsx";
 import * as $index from "./routes/index.tsx";
-import * as $Contact from "./islands/Contact.tsx";
 import * as $Hero from "./islands/Hero.tsx";
-import * as $QuoteButton from "./islands/QuoteButton.ts";
+import * as $Quote from "./islands/Quote.tsx";
+import * as $QuoteButton from "./islands/QuoteButton.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
     "./routes/_app.tsx": $_app,
     "./routes/_layout.tsx": $_layout,
+    "./routes/api/google-maps-key.tsx": $api_google_maps_key,
     "./routes/contact.ts": $contact,
+    "./routes/estimate.tsx": $estimate,
     "./routes/index.tsx": $index,
   },
   islands: {
-    "./islands/Contact.tsx": $Contact,
     "./islands/Hero.tsx": $Hero,
-    "./islands/QuoteButton.ts": $QuoteButton,
+    "./islands/Quote.tsx": $Quote,
+    "./islands/QuoteButton.tsx": $QuoteButton,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;
