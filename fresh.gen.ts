@@ -5,7 +5,7 @@
 import * as $_app from "./routes/_app.tsx";
 import * as $_layout from "./routes/_layout.tsx";
 import * as $api_google_maps_key from "./routes/api/google-maps-key.tsx";
-import * as $contact from "./routes/contact.ts";
+import * as $contact from "./routes/contact.tsx";
 import * as $estimate from "./routes/estimate.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $Hero from "./islands/Hero.tsx";
@@ -18,7 +18,7 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/_layout.tsx": $_layout,
     "./routes/api/google-maps-key.tsx": $api_google_maps_key,
-    "./routes/contact.ts": $contact,
+    "./routes/contact.tsx": $contact,
     "./routes/estimate.tsx": $estimate,
     "./routes/index.tsx": $index,
   },
