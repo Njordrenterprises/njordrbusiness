@@ -256,11 +256,13 @@ export default function Quote() {
       }
     }
 
-    if (!validateMessage(message)) {
+    const sanitizedMessage = sanitizeMessage(message);
+    if (sanitizedMessage.length === 0) {
       setStatus("error");
-      alert("Please provide more details in your message (at least 10 words).");
+      alert("Please provide a valid message without special characters.");
       return;
     }
+    formData.set('message', sanitizedMessage);
 
     // Append selected files to formData
     selectedFiles.forEach((file, index) => {
@@ -548,7 +550,11 @@ export default function Quote() {
               placeholder="Please provide any additional information about your project..."
               defaultValue="Please describe the current condition of the area, any specific concerns, and your vision for the renovation. The more details you provide, the better we can assist you."
               value={formState.message || ''}
-              onInput={(e) => updateFormState('message', (e.target as HTMLTextAreaElement).value)}
+              onInput={(e) => {
+                const sanitizedValue = sanitizeMessage((e.target as HTMLTextAreaElement).value);
+                updateFormState('message', sanitizedValue);
+                (e.target as HTMLTextAreaElement).value = sanitizedValue;
+              }}
             ></textarea>
           </div>
           <button
@@ -580,15 +586,14 @@ const validatePhone = (phone: string): boolean => {
   return re.test(phone);
 };
 
-
-
 const validateName = (name: string): boolean => {
   return name.trim().length >= 2;
 };
 
-
-
-const validateMessage = (message: string): boolean => {
-  const words = message.trim().split(/\s+/);
-  return words.length >= 10;
+const sanitizeMessage = (message: string): string => {
+  // Remove any HTML tags
+  message = message.replace(/<[^>]*>/g, '');
+  
+  // Allow only alphanumeric characters, common punctuation, and whitespace
+  return message.replace(/[^a-zA-Z0-9\s.,!?()-]/g, '');
 };
