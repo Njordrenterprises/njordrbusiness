@@ -1,9 +1,9 @@
 name: Deploy
 on:
   push:
-    branches: main
+    branches: sendgrid
   pull_request:
-    branches: main
+    branches: sendgrid
 
 jobs:
   deploy:
