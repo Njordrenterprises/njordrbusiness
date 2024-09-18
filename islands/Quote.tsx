@@ -19,6 +19,10 @@ export default function Quote() {
   const [budget, setBudget] = useState(500);
   const [timeframe, setTimeframe] = useState(7);
   const [completionDate, setCompletionDate] = useState<string>('');
+  const [formState, setFormState] = useState(() => {
+    const savedState = sessionStorage.getItem('quoteFormState');
+    return savedState ? JSON.parse(savedState) : {};
+  });
 
   const calculateCompletionDate = (days: number) => {
     const date = new Date();
@@ -63,6 +67,26 @@ export default function Quote() {
       checkbox.addEventListener('change', handleLocationCheckbox);
     }
 
+    // Load form state from sessionStorage on component mount
+    const savedState = sessionStorage.getItem('quoteFormState');
+    if (savedState) {
+      const parsedState = JSON.parse(savedState);
+      setFormState(parsedState);
+      // Populate form fields with saved state
+      Object.entries(parsedState).forEach(([key, value]) => {
+        const element = document.getElementById(key) as HTMLInputElement | null;
+        if (element) {
+          if (element.type === 'checkbox') {
+            element.checked = value as boolean;
+          } else {
+            element.value = value as string;
+          }
+        }
+      });
+    }
+
+    // Set up popstate event listener
+    globalThis.addEventListener('popstate', handlePopState);
     return () => {
       const script = document.querySelector('script[src^="https://maps.googleapis.com/maps/api/js"]');
       if (script) {
@@ -71,6 +95,7 @@ export default function Quote() {
       if (checkbox) {
         checkbox.removeEventListener('change', handleLocationCheckbox);
       }
+      globalThis.removeEventListener('popstate', handlePopState);
     };
   }, []);
 
@@ -142,8 +167,42 @@ export default function Quote() {
     const input = e.target as HTMLInputElement;
     if (input.files) {
       const files = Array.from(input.files);
-      const validFiles = files.filter(file => file.type.startsWith('image/'));
-      setSelectedFiles(validFiles.slice(0, 4));
+      addSelectedFiles(files);
+    }
+  };
+
+  const takePicture = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = (e) => {
+      const input = e.target as HTMLInputElement;
+      if (input.files) {
+        const files = Array.from(input.files);
+        addSelectedFiles(files);
+      }
+    };
+    input.click();
+  };
+
+  const addSelectedFiles = (files: File[]) => {
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    const newFiles = [...selectedFiles, ...validFiles].slice(0, 4);
+    setSelectedFiles(newFiles);
+    updateImagePreview(newFiles);
+  };
+
+  const updateImagePreview = (files: File[]) => {
+    const previewDiv = document.getElementById('imagePreview');
+    if (previewDiv) {
+      previewDiv.innerHTML = '';
+      files.forEach(file => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.className = 'w-20 h-20 object-cover rounded';
+        previewDiv.appendChild(img);
+      });
     }
   };
 
@@ -258,6 +317,32 @@ export default function Quote() {
     return address.replace(/[^a-zA-Z0-9\s,.-]/g, '');
   };
 
+  const handlePopState = (event: PopStateEvent) => {
+    if (event.state && event.state.formData) {
+      setFormState(event.state.formData);
+      // Populate form fields with the state data
+      Object.entries(event.state.formData).forEach(([key, value]) => {
+        const element = document.getElementById(key) as HTMLInputElement | null;
+        if (element) {
+          if (element.type === 'checkbox') {
+            element.checked = value as boolean;
+          } else {
+            element.value = value as string;
+          }
+        }
+      });
+    }
+  };
+
+  const updateFormState = (key: string, value: string | boolean) => {
+    setFormState((prevState: Record<string, string | boolean>) => {
+      const newState = { ...prevState, [key]: value };
+      sessionStorage.setItem('quoteFormState', JSON.stringify(newState));
+      history.pushState({ formData: newState }, '', window.location.pathname);
+      return newState;
+    });
+  };
+
   return (
     <section id="quote" class="container mx-auto px-4 py-16">
       <h2 class="text-3xl md:text-4xl font-bold text-center mb-8">Estimate Request</h2>
@@ -272,6 +357,8 @@ export default function Quote() {
               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               placeholder="Your full name"
+              value={formState.name || ''}
+              onInput={(e) => updateFormState('name', (e.target as HTMLInputElement).value)}
             />
           </div>
           <div>
@@ -285,6 +372,8 @@ export default function Quote() {
               placeholder="123 Main St, Winnipeg, MB"
               required
               onChange={() => setIsValidAddress(false)}
+              value={formState.address || ''}
+              onInput={(e) => updateFormState('address', (e.target as HTMLInputElement).value)}
             />
           </div>
           <div id="map-view" style={{ width: '100%', height: '160px', marginTop: '20px' }}></div>
@@ -296,6 +385,8 @@ export default function Quote() {
                 name="manualAddress"
                 className="form-checkbox h-5 w-5 text-blue-600"
                 onChange={handleManualAddressCheckbox}
+                checked={formState.manualAddress || false}
+                onInput={(e) => updateFormState('manualAddress', (e.target as HTMLInputElement).checked)}
               />
               <span className="font-semibold">Can't find your location?</span>
             </label>
@@ -308,7 +399,11 @@ export default function Quote() {
               name="manualAddressField"
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your address manually"
-              onInput={handleManualAddressInput}
+              value={formState.manualAddressField || ''}
+              onInput={(e) => {
+                handleManualAddressInput(e);
+                updateFormState('manualAddressField', (e.target as HTMLInputElement).value);
+              }}
             />
           </div>
           <div id="locationMessage" className="mt-2 text-sm text-gray-600 hidden">
@@ -323,6 +418,8 @@ export default function Quote() {
               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               placeholder="youremail@example.com"
+              value={formState.email || ''}
+              onInput={(e) => updateFormState('email', (e.target as HTMLInputElement).value)}
             />
           </div>
           <div>
@@ -334,6 +431,8 @@ export default function Quote() {
               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
               placeholder="(204) 123-4567"
+              value={formState.phone || ''}
+              onInput={(e) => updateFormState('phone', (e.target as HTMLInputElement).value)}
             />
           </div>
           <div>
@@ -346,6 +445,14 @@ export default function Quote() {
                     name="services"
                     value={service}
                     class="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out"
+                    checked={formState.services && formState.services.includes(service)}
+                    onInput={(e) => {
+                      const checked = (e.target as HTMLInputElement).checked;
+                      const newServices = checked
+                        ? [...(formState.services || []), service]
+                        : (formState.services || []).filter((s: string) => s !== service);
+                      updateFormState('services', newServices);
+                    }}
                   />
                   <span>{service}</span>
                 </label>
@@ -354,18 +461,33 @@ export default function Quote() {
           </div>
           <div>
             <label for="images" class="block mb-2 font-semibold">Upload Images (1-4 images)</label>
-            <input
-              type="file"
-              id="images"
-              name="images"
-              accept="image/*"
-              multiple
-              capture="environment"
-              onChange={handleFileChange}
-              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input
+                type="file"
+                id="images"
+                name="images"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+                class="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => document.getElementById('images')?.click()}
+                class="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Select Files
+              </button>
+              <button
+                type="button"
+                onClick={() => takePicture()}
+                class="w-full sm:w-auto px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 sm:hidden"
+              >
+                Take Picture
+              </button>
+            </div>
             <p class="text-sm text-gray-600 mt-1">Please upload at least 1 image (maximum 4) of the area you want to renovate.</p>
+            <div id="imagePreview" class="mt-2 flex flex-wrap gap-2"></div>
           </div>
           <div>
             <label htmlFor="budget" className="block mb-2 font-semibold">Budget</label>
@@ -425,6 +547,8 @@ export default function Quote() {
               required
               placeholder="Please provide any additional information about your project..."
               defaultValue="Please describe the current condition of the area, any specific concerns, and your vision for the renovation. The more details you provide, the better we can assist you."
+              value={formState.message || ''}
+              onInput={(e) => updateFormState('message', (e.target as HTMLTextAreaElement).value)}
             ></textarea>
           </div>
           <button

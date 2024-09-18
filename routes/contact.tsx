@@ -1,5 +1,5 @@
 import { Handlers } from "$fresh/server.ts";
-import { createClient } from "https://esm.sh/@libsql/client@0.x/web";
+import { createClient } from "https://esm.sh/@libsql/client@0.12.0/web";
 import { S3Client, PutObjectCommand } from "npm:@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "npm:uuid";
 
@@ -10,21 +10,35 @@ if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
   console.error("Turso database configuration is missing. Please check your environment variables.");
 }
 
-const tursoClient = TURSO_DATABASE_URL && TURSO_AUTH_TOKEN
-  ? createClient({
-      url: TURSO_DATABASE_URL,
-      authToken: TURSO_AUTH_TOKEN,
-    })
-  : null;
+const tursoClient = createClient({
+  url: TURSO_DATABASE_URL!,
+  authToken: TURSO_AUTH_TOKEN!,
+});
 
 // Create table if not exists
-await tursoClient!.execute(`
+await tursoClient.execute(`
   CREATE TABLE IF NOT EXISTS quote_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    email TEXT,
+    address TEXT,
+    phone TEXT,
+    services TEXT,
+    message TEXT,
+    image_urls TEXT,
+    budget TEXT,
+    timeframe TEXT,
+    completion_date TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
 `);
 
 const s3Client = new S3Client({
   region: "us-west-2",
+  credentials: {
+    accessKeyId: Deno.env.get("AWS_ACCESS_KEY_ID")!,
+    secretAccessKey: Deno.env.get("AWS_SECRET_ACCESS_KEY")!,
+  },
 });
 
 async function uploadToS3(file: File): Promise<string> {
