@@ -3,10 +3,19 @@ import { createClient } from "https://esm.sh/@libsql/client@0.x/web";
 import { S3Client, PutObjectCommand } from "npm:@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "npm:uuid";
 
-const tursoClient = createClient({
-  url: Deno.env.get("TURSO_DATABASE_URL")!,
-  authToken: Deno.env.get("TURSO_AUTH_TOKEN")!,
-});
+const TURSO_DATABASE_URL = Deno.env.get("TURSO_DATABASE_URL");
+const TURSO_AUTH_TOKEN = Deno.env.get("TURSO_AUTH_TOKEN");
+
+if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+  console.error("Turso database configuration is missing. Please check your environment variables.");
+}
+
+const tursoClient = TURSO_DATABASE_URL && TURSO_AUTH_TOKEN
+  ? createClient({
+      url: TURSO_DATABASE_URL,
+      authToken: TURSO_AUTH_TOKEN,
+    })
+  : null;
 
 // Create table if not exists
 await tursoClient.execute(`
