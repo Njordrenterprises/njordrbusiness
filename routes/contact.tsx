@@ -1,4 +1,53 @@
 import { Handlers } from "$fresh/server.ts";
+import { createClient } from "https://esm.sh/@libsql/client@0.x/web";
+import { S3Client, PutObjectCommand } from "npm:@aws-sdk/client-s3";
+import { v4 as uuidv4 } from "npm:uuid";
+
+const tursoClient = createClient({
+  url: Deno.env.get("TURSO_DATABASE_URL")!,
+  authToken: Deno.env.get("TURSO_AUTH_TOKEN")!,
+});
+
+// Create table if not exists
+await tursoClient.execute(`
+  CREATE TABLE IF NOT EXISTS quote_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    email TEXT,
+    address TEXT,
+    phone TEXT,
+    services TEXT,
+    message TEXT,
+    image_urls TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+const s3Client = new S3Client({
+  region: "us-west-2",
+});
+
+async function uploadToS3(file: File): Promise<string> {
+  const fileExtension = file.name.split('.').pop();
+  const fileName = `${uuidv4()}.${fileExtension}`;
+  const fileBuffer = await file.arrayBuffer();
+
+  const command = new PutObjectCommand({
+    Bucket: "njordr",
+    Key: fileName,
+    Body: new Uint8Array(fileBuffer),
+    ContentType: file.type,
+    ACL: "public-read",
+  });
+
+  await s3Client.send(command);
+  return `https://njordr.s3.us-west-2.amazonaws.com/${fileName}`;
+}
+
+async function getEmailTemplate(templateName: string, data: Record<string, string>): Promise<string> {
+  const template = await Deno.readTextFile(`./email_templates/${templateName}.html`);
+  return template.replace(/{{(\w+)}}/g, (_, key) => data[key] || '');
+}
 
 async function sendEmail(to: string, subject: string, content: string) {
   const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
@@ -34,30 +83,31 @@ export const handler: Handlers = {
     const phone = formData.get("phone") as string;
     const services = formData.getAll("services") as string[];
     const message = formData.get("message") as string;
+    const images = formData.getAll("images") as File[];
 
-    const adminEmailContent = `
-      <h1>New Quote Request</h1>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Address:</strong> ${address}</p>
-      <p><strong>Phone:</strong> ${phone}</p>
-      <p><strong>Services:</strong> ${services.join(", ")}</p>
-      <p><strong>Message:</strong> ${message}</p>
-    `;
+    const imageUrls = await Promise.all(images.map(uploadToS3));
+    const imageHtml = imageUrls.map(url => `<img src="${url}" style="max-width: 300px; margin: 10px 0;">`).join("");
 
-    const userEmailContent = `
-      <h1>Thank you for your quote request!</h1>
-      <p>We have received your request and will get back to you shortly. Here's a summary of your submission:</p>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Address:</strong> ${address}</p>
-      <p><strong>Phone:</strong> ${phone}</p>
-      <p><strong>Services:</strong> ${services.join(", ")}</p>
-      <p><strong>Message:</strong> ${message}</p>
-      <p>To schedule an appointment, please click the button below:</p>
-      <a href="https://calendly.com/njordr" style="background-color: #4CAF50; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer;">Schedule Appointment</a>
-    `;
+    // Store user data in Turso
+    await tursoClient.execute({
+      sql: "INSERT INTO quote_requests (name, email, address, phone, services, message, image_urls) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      args: [name, email, address, phone, services.join(","), message, imageUrls.join(",")],
+    });
+
+    const templateData = {
+      name,
+      email,
+      address,
+      phone,
+      services: services.join(", "),
+      message,
+      imageHtml,
+    };
 
     try {
+      const adminEmailContent = await getEmailTemplate('admin_template', templateData);
+      const userEmailContent = await getEmailTemplate('user_template', templateData);
+
       await sendEmail("hello@njordr.ca", "New Quote Request", adminEmailContent);
       await sendEmail(email, "Quote Request Confirmation - Njörðr Exteriors", userEmailContent);
       return new Response("Message sent successfully", { status: 200 });
@@ -65,5 +115,5 @@ export const handler: Handlers = {
       console.error("Error sending email:", error);
       return new Response("Failed to send message", { status: 500 });
     }
-  },
+  }
 };

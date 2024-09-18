@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quote Request Confirmation - Njörðr Exteriors</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1, h2 { color: #2c3e50; }
+        .button { background-color: #3498db; color: white; padding: 12px 20px; text-decoration: none; display: inline-block; border-radius: 4px; }
+        .customer-info { background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .services { background-color: #e9f7ef; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .image-gallery { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .image-gallery img { max-width: 100%; height: auto; border-radius: 4px; }
+        @media only screen and (max-width: 600px) {
+            body { padding: 10px; }
+            .button { display: block; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="https://njordr.s3.us-west-2.amazonaws.com/NjordrWhiteLogo.webp" alt="Njörðr Exteriors Logo" style="max-width: 200px; height: auto;">
+    </div>
+    <h1>Thank you for your quote request, {{name}}!</h1>
+    <p>We have received your request and will get back to you shortly. Here's a summary of your submission:</p>
+    <div class="customer-info">
+        <h2>Your Information:</h2>
+        <p><strong>Name:</strong> {{name}}</p>
+        <p><strong>Email:</strong> {{email}}</p>
+        <p><strong>Address:</strong> {{address}}</p>
+        <p><strong>Phone:</strong> {{phone}}</p>
+        <p><strong>Requested Completion Date:</strong> {{completionDate}}</p>
+    </div>
+    <div class="services">
+        <h2>Requested Services:</h2>
+        <p>{{services}}</p>
+    </div>
+    <h2>Your Message:</h2>
+    <p>{{message}}</p>
+    <h2>Your Uploaded Images:</h2>
+    <div class="image-gallery">
+        {{imageHtml}}
+    </div>
+    <p>To schedule an appointment, please click the button below:</p>
+    <a href="https://calendly.com/njordr" class="button">Schedule Appointment</a>
+    <p>If any details are incorrect, please reply to this email with the corrections.</p>
+    <p>If you have any questions, please don't hesitate to contact us at hello@njordr.ca or call us at (204) 123-4567.</p>
+    <p>Best regards,<br>The Njörðr Exteriors Team</p>
+</body>
+</html>

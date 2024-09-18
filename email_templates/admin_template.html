@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Quote Request - Njörðr Exteriors</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        h1, h2 { color: #2c3e50; }
+        .button { background-color: #27ae60; color: white; padding: 12px 20px; text-decoration: none; display: inline-block; border-radius: 4px; }
+        .customer-info { background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .services { background-color: #e9f7ef; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .image-gallery { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .image-gallery img { max-width: 45%; height: auto; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="https://njordr.s3.us-west-2.amazonaws.com/NjordrWhiteLogo.webp" alt="Njörðr Exteriors Logo" style="max-width: 200px; height: auto;">
+    </div>
+    <h1>New Quote Request</h1>
+    <div class="customer-info">
+        <h2>Customer Information:</h2>
+        <p><strong>Name:</strong> {{name}}</p>
+        <p><strong>Email:</strong> {{email}}</p>
+        <p><strong>Address:</strong> {{address}}</p>
+        <p><strong>Phone:</strong> {{phone}}</p>
+        <p><strong>Requested Completion Date:</strong> {{completionDate}}</p>
+    </div>
+    <div class="services">
+        <h2>Requested Services:</h2>
+        <p>{{services}}</p>
+    </div>
+    <h2>Customer Message:</h2>
+    <p>{{message}}</p>
+    <h2>Uploaded Images:</h2>
+    <div class="image-gallery">
+        {{imageHtml}}
+    </div>
+    <p>To contact the customer, click one of the buttons below:</p>
+    <div style="margin-top: 20px;">
+        <a href="https://calendly.com/njordr" class="button" style="margin-right: 10px;">Schedule Appointment</a>
+        <a href="mailto:{{email}}?subject=Re: Quote Request for Njörðr Exteriors&body=Dear {{name}},%0D%0A%0D%0AThank you for your quote request for {{services}}. We have reviewed your submission and would like to discuss your project further.%0D%0A%0D%0ABest regards,%0D%0ANjörðr Exteriors Team" class="button">Contact Customer</a>
+    </div>
+</body>
+</html>
