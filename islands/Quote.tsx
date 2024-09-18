@@ -197,13 +197,30 @@ export default function Quote() {
     const previewDiv = document.getElementById('imagePreview');
     if (previewDiv) {
       previewDiv.innerHTML = '';
-      files.forEach(file => {
+      files.forEach((file, index) => {
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'relative';
+        
         const img = document.createElement('img');
         img.src = URL.createObjectURL(file);
         img.className = 'w-20 h-20 object-cover rounded';
-        previewDiv.appendChild(img);
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.innerHTML = '&times;';
+        deleteButton.className = 'absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center';
+        deleteButton.onclick = () => deleteImage(index);
+        
+        imgContainer.appendChild(img);
+        imgContainer.appendChild(deleteButton);
+        previewDiv.appendChild(imgContainer);
       });
     }
+  };
+
+  const deleteImage = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    updateImagePreview(newFiles);
   };
 
   const handleSubmit = async (e: Event) => {
@@ -488,7 +505,10 @@ export default function Quote() {
                 Take Picture
               </button>
             </div>
-            <p class="text-sm text-gray-600 mt-1">Please upload at least 1 image (maximum 4) of the area you want to renovate.</p>
+            <p class="text-sm text-gray-600 mt-1">
+              Please upload at least 1 image (maximum 4) of the area you want to renovate. 
+              Selected: {selectedFiles.length}/4
+            </p>
             <div id="imagePreview" class="mt-2 flex flex-wrap gap-2"></div>
           </div>
           <div>

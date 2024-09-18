@@ -40,6 +40,7 @@
   "deploy": {
     "project": "759ee87b-9c36-4a2d-9c07-54fd905f6439",
     "exclude": [
+      "**/node_modules",
       "**/node_modules"
     ],
     "include": [],

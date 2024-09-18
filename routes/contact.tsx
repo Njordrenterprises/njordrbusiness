@@ -10,28 +10,16 @@ if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
   console.error("Turso database configuration is missing. Please check your environment variables.");
 }
 
-const tursoClient = createClient({
-  url: TURSO_DATABASE_URL!,
-  authToken: TURSO_AUTH_TOKEN!,
-});
+let tursoClient: ReturnType<typeof createClient> | null = null;
 
-// Create table if not exists
-await tursoClient.execute(`
-  CREATE TABLE IF NOT EXISTS quote_requests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    email TEXT,
-    address TEXT,
-    phone TEXT,
-    services TEXT,
-    message TEXT,
-    image_urls TEXT,
-    budget TEXT,
-    timeframe TEXT,
-    completion_date TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+const initTursoClient = () => {
+  if (!tursoClient) {
+    tursoClient = createClient({
+      url: TURSO_DATABASE_URL!,
+      authToken: TURSO_AUTH_TOKEN!,
+    });
+  }
+};
 
 const s3Client = new S3Client({
   region: "us-west-2",
@@ -90,50 +78,77 @@ async function sendEmail(to: string, subject: string, content: string) {
 
 export const handler: Handlers = {
   async POST(req) {
-    const formData = await req.formData();
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const address = formData.get("address") as string;
-    const phone = formData.get("phone") as string;
-    const services = formData.getAll("services") as string[];
-    const message = formData.get("message") as string;
-    const budget = formData.get("budget") as string;
-    const timeframe = formData.get("timeframe") as string;
-    const completionDate = formData.get("completionDate") as string;
-    const images = formData.getAll("images") as File[];
-
-    const imageUrls = await Promise.all(images.map(uploadToS3));
-    const imageHtml = imageUrls.map(url => `<img src="${url}" style="max-width: 300px; margin: 10px 0;">`).join("");
-
-    // Store user data in Turso
-    await tursoClient!.execute({
-      sql: "INSERT INTO quote_requests (name, email, address, phone, services, message, image_urls, budget, timeframe, completion_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      args: [name, email, address, phone, services.join(","), message, imageUrls.join(","), budget, timeframe, completionDate],
-    });
-
-    const templateData = {
-      name,
-      email,
-      address,
-      phone,
-      services: services.join(", "),
-      message,
-      imageHtml,
-      budget,
-      timeframe,
-      completionDate,
-    };
+    initTursoClient();
+    if (!tursoClient) {
+      return new Response("Database client not initialized", { status: 500 });
+    }
 
     try {
-      const adminEmailContent = await getEmailTemplate('admin_template', templateData);
-      const userEmailContent = await getEmailTemplate('user_template', templateData);
+      await tursoClient!.execute(`
+        CREATE TABLE IF NOT EXISTS quote_requests (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT,
+          email TEXT,
+          address TEXT,
+          phone TEXT,
+          services TEXT,
+          message TEXT,
+          image_urls TEXT,
+          budget TEXT,
+          timeframe TEXT,
+          completion_date TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
 
-      await sendEmail("hello@njordr.ca", "New Quote Request", adminEmailContent);
-      await sendEmail(email, "Quote Request Confirmation - Njörðr Exteriors", userEmailContent);
-      return new Response("Message sent successfully", { status: 200 });
+      const formData = await req.formData();
+      const name = formData.get("name") as string;
+      const email = formData.get("email") as string;
+      const address = formData.get("address") as string;
+      const phone = formData.get("phone") as string;
+      const services = formData.getAll("services") as string[];
+      const message = formData.get("message") as string;
+      const budget = formData.get("budget") as string;
+      const timeframe = formData.get("timeframe") as string;
+      const completionDate = formData.get("completionDate") as string;
+      const images = formData.getAll("images") as File[];
+
+      const imageUrls = await Promise.all(images.map(uploadToS3));
+      const imageHtml = imageUrls.map(url => `<img src="${url}" style="max-width: 300px; margin: 10px 0;">`).join("");
+
+      // Store user data in Turso
+      await tursoClient!.execute({
+        sql: "INSERT INTO quote_requests (name, email, address, phone, services, message, image_urls, budget, timeframe, completion_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        args: [name, email, address, phone, services.join(","), message, imageUrls.join(","), budget, timeframe, completionDate],
+      });
+
+      const templateData = {
+        name,
+        email,
+        address,
+        phone,
+        services: services.join(", "),
+        message,
+        imageHtml,
+        budget,
+        timeframe,
+        completionDate,
+      };
+
+      try {
+        const adminEmailContent = await getEmailTemplate('admin_template', templateData);
+        const userEmailContent = await getEmailTemplate('user_template', templateData);
+
+        await sendEmail("hello@njordr.ca", "New Quote Request", adminEmailContent);
+        await sendEmail(email, "Quote Request Confirmation - Njörðr Exteriors", userEmailContent);
+        return new Response("Message sent successfully", { status: 200 });
+      } catch (error) {
+        console.error("Error sending email:", error);
+        return new Response("Failed to send message", { status: 500 });
+      }
     } catch (error) {
-      console.error("Error sending email:", error);
-      return new Response("Failed to send message", { status: 500 });
+      console.error("Error in POST handler:", error);
+      return new Response(`Error: ${error.message}`, { status: 500 });
     }
   }
 };
