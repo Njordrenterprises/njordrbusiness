@@ -141,7 +141,9 @@ export default function Quote() {
   const handleFileChange = (e: Event) => {
     const input = e.target as HTMLInputElement;
     if (input.files) {
-      setSelectedFiles(Array.from(input.files).slice(0, 4));
+      const files = Array.from(input.files);
+      const validFiles = files.filter(file => file.type.startsWith('image/'));
+      setSelectedFiles(validFiles.slice(0, 4));
     }
   };
 
@@ -358,6 +360,7 @@ export default function Quote() {
               name="images"
               accept="image/*"
               multiple
+              capture="environment"
               onChange={handleFileChange}
               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required

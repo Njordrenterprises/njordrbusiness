@@ -40,6 +40,7 @@ jobs:
           entrypoint: "main.ts"
           root: "."
         env:
+          DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}

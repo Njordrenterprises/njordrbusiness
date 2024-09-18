@@ -18,18 +18,9 @@ const tursoClient = TURSO_DATABASE_URL && TURSO_AUTH_TOKEN
   : null;
 
 // Create table if not exists
-await tursoClient.execute(`
+await tursoClient!.execute(`
   CREATE TABLE IF NOT EXISTS quote_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    email TEXT,
-    address TEXT,
-    phone TEXT,
-    services TEXT,
-    message TEXT,
-    image_urls TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
 `);
 
 const s3Client = new S3Client({
@@ -92,15 +83,18 @@ export const handler: Handlers = {
     const phone = formData.get("phone") as string;
     const services = formData.getAll("services") as string[];
     const message = formData.get("message") as string;
+    const budget = formData.get("budget") as string;
+    const timeframe = formData.get("timeframe") as string;
+    const completionDate = formData.get("completionDate") as string;
     const images = formData.getAll("images") as File[];
 
     const imageUrls = await Promise.all(images.map(uploadToS3));
     const imageHtml = imageUrls.map(url => `<img src="${url}" style="max-width: 300px; margin: 10px 0;">`).join("");
 
     // Store user data in Turso
-    await tursoClient.execute({
-      sql: "INSERT INTO quote_requests (name, email, address, phone, services, message, image_urls) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      args: [name, email, address, phone, services.join(","), message, imageUrls.join(",")],
+    await tursoClient!.execute({
+      sql: "INSERT INTO quote_requests (name, email, address, phone, services, message, image_urls, budget, timeframe, completion_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [name, email, address, phone, services.join(","), message, imageUrls.join(","), budget, timeframe, completionDate],
     });
 
     const templateData = {
@@ -111,6 +105,9 @@ export const handler: Handlers = {
       services: services.join(", "),
       message,
       imageHtml,
+      budget,
+      timeframe,
+      completionDate,
     };
 
     try {
