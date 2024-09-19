@@ -8,9 +8,15 @@ import * as $api_google_maps_key from "./routes/api/google-maps-key.tsx";
 import * as $contact from "./routes/contact.tsx";
 import * as $estimate from "./routes/estimate.tsx";
 import * as $index from "./routes/index.tsx";
+import * as $AddressInput from "./islands/AddressInput.tsx";
+import * as $BudgetSlider from "./islands/BudgetSlider.tsx";
+import * as $FormFields from "./islands/FormFields.tsx";
 import * as $Hero from "./islands/Hero.tsx";
+import * as $ImageUpload from "./islands/ImageUpload.tsx";
 import * as $Quote from "./islands/Quote.tsx";
 import * as $QuoteButton from "./islands/QuoteButton.tsx";
+import * as $ServiceSelection from "./islands/ServiceSelection.tsx";
+import * as $TimeFrameSlider from "./islands/TimeFrameSlider.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -23,9 +29,15 @@ const manifest = {
     "./routes/index.tsx": $index,
   },
   islands: {
+    "./islands/AddressInput.tsx": $AddressInput,
+    "./islands/BudgetSlider.tsx": $BudgetSlider,
+    "./islands/FormFields.tsx": $FormFields,
     "./islands/Hero.tsx": $Hero,
+    "./islands/ImageUpload.tsx": $ImageUpload,
     "./islands/Quote.tsx": $Quote,
     "./islands/QuoteButton.tsx": $QuoteButton,
+    "./islands/ServiceSelection.tsx": $ServiceSelection,
+    "./islands/TimeFrameSlider.tsx": $TimeFrameSlider,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

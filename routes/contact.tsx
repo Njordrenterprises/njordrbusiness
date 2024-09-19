@@ -78,13 +78,14 @@ async function sendEmail(to: string, subject: string, content: string) {
 
 export const handler: Handlers = {
   async POST(req) {
-    initTursoClient();
-    if (!tursoClient) {
-      return new Response("Database client not initialized", { status: 500 });
-    }
-
     try {
-      await tursoClient!.execute(`
+      initTursoClient();
+      if (!tursoClient) {
+        throw new Error("Database client not initialized");
+      }
+
+      // Create table if not exists
+      await tursoClient.execute(`
         CREATE TABLE IF NOT EXISTS quote_requests (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT,
@@ -117,7 +118,7 @@ export const handler: Handlers = {
       const imageHtml = imageUrls.map(url => `<img src="${url}" style="max-width: 300px; margin: 10px 0;">`).join("");
 
       // Store user data in Turso
-      await tursoClient!.execute({
+      await tursoClient.execute({
         sql: "INSERT INTO quote_requests (name, email, address, phone, services, message, image_urls, budget, timeframe, completion_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         args: [name, email, address, phone, services.join(","), message, imageUrls.join(","), budget, timeframe, completionDate],
       });
@@ -147,8 +148,8 @@ export const handler: Handlers = {
         return new Response("Failed to send message", { status: 500 });
       }
     } catch (error) {
-      console.error("Error in POST handler:", error);
-      return new Response(`Error: ${error.message}`, { status: 500 });
+      console.error("Error processing request:", error);
+      return new Response("Internal server error", { status: 500 });
     }
   }
 };
