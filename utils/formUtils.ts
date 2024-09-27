@@ -25,7 +25,7 @@ export async function handleSubmit(
     }
   });
 
-  selectedFiles.forEach((file, index) => {
+  selectedFiles.forEach((file) => {
     formData.append(`images`, file);
   });
 
@@ -36,20 +36,25 @@ export async function handleSubmit(
       body: formData,
     });
 
-    if (response.ok) {
+    const result = await response.json();
+
+    if (response.ok && result.status === "success") {
       console.log("Form submission successful");
       setStatus("success");
+      return "success";
     } else {
-      console.error("Form submission failed", await response.text());
+      console.error("Form submission failed", result.message);
       setStatus("error");
+      return "error";
     }
   } catch (error) {
     console.error("Error submitting form:", error);
     setStatus("error");
+    return "error";
   }
 }
 
 export function validateForm(formState: FormState): boolean {
-  // Add your form validation logic here
-  return true; // Return true if the form is valid, false otherwise
+  // Example validation logic
+  return Object.values(formState).every(value => value !== '');
 }

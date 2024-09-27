@@ -15,6 +15,18 @@
   .animate-pulse-glow {
     animation: pulse 2s infinite;
   }
+
+  /* Existing styles... */
+
+  /* Utility for default scroll margin */
+  .scroll-offset {
+    scroll-margin-top: 200px;
+  }
+
+  /* Additional scroll margin for About section */
+  .scroll-offset-extra {
+    scroll-margin-top: 100px; /* 200px + 100px */
+  }
 }
 
 #quote-button.fixed {
@@ -48,7 +60,6 @@
 
 @keyframes fadeInUp {
   from {
-    opacity: 0;
     transform: translateY(20px);
   }
   to {
@@ -85,10 +96,4 @@
 .reveal-text.reveal {
   opacity: 1;
   transform: translateY(0);
-}
-
-.reveal-text.visible {
-  animation: 
-    typewriter 1s steps(40, end) forwards,
-    blinkCursor 0.75s step-end infinite;
 }

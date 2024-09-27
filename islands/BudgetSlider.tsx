@@ -1,7 +1,8 @@
 import { useState } from "preact/hooks";
+import { FormState } from "../utils/types.ts";
 
 interface BudgetSliderProps {
-  updateFormState: (key: string, value: string) => void;
+  updateFormState: (key: keyof FormState, value: string | string[] | boolean) => void;
 }
 
 export default function BudgetSlider({ updateFormState }: BudgetSliderProps) {

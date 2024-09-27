@@ -12,13 +12,15 @@ export default function Layout({ Component }: PageProps) {
         const element = document.querySelector(target.hash);
         if (element) {
           const headerHeight = document.querySelector('header')?.offsetHeight || 0;
-          const elementPosition = element.getBoundingClientRect().top + globalThis.pageYOffset;
-          const offsetPosition = elementPosition - headerHeight - 32; // 32px extra offset
+          let yOffset = -headerHeight - 200; // Default offset
 
-          globalThis.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
+          if (target.hash === '#about') {
+            yOffset -= 100; // Additional 100px for About section
+          }
+
+          const y = element.getBoundingClientRect().top + globalThis.pageYOffset + yOffset;
+
+          globalThis.scrollTo({ top: y, behavior: 'smooth' });
         }
       }
     };

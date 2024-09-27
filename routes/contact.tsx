@@ -142,10 +142,16 @@ export const handler: Handlers = {
 
         await sendEmail("hello@njordr.ca", "New Quote Request", adminEmailContent);
         await sendEmail(email, "Quote Request Confirmation - Njörðr Exteriors", userEmailContent);
-        return new Response("Message sent successfully", { status: 200 });
+        return new Response(JSON.stringify({ status: "success", message: "Message sent successfully" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
       } catch (error) {
         console.error("Error sending email:", error);
-        return new Response("Failed to send message", { status: 500 });
+        return new Response(JSON.stringify({ status: "error", message: "Failed to send message" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
       }
     } catch (error) {
       console.error("Error processing request:", error);

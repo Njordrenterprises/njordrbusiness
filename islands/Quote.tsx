@@ -7,20 +7,37 @@ import BudgetSlider from "./BudgetSlider.tsx";
 import TimeframeSlider from "./TimeFrameSlider.tsx";
 import { useFormState } from "../hooks/useFormState.ts";
 import { handleSubmit } from "../utils/formUtils.ts";
-import { FormState } from "../utils/types.ts";
+import { JSX } from "preact";
 
 export default function Quote() {
-  const { formState, updateFormState } = useFormState();
+  const { formState, updateFormState, resetForm } = useFormState();
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [message, setMessage] = useState<string>("");
 
   const handleImageUpload = (files: File[]) => {
     setSelectedFiles(files);
   };
 
-  const onSubmit = (e: Event) => {
+  const onSubmit = async (e: JSX.TargetedEvent<HTMLFormElement, Event>) => {
     e.preventDefault();
-    handleSubmit(e, formState, setStatus, selectedFiles);
+    setStatus("loading");
+    setMessage("");
+
+    try {
+      const result = await handleSubmit(e, formState, setStatus, selectedFiles);
+      if (result === "success") {
+        setMessage("Your request has been submitted successfully!");
+        resetForm();
+        setSelectedFiles([]);
+      } else {
+        setMessage("There was an issue submitting your request. Please try again.");
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      setStatus("error");
+      setMessage("An unexpected error occurred. Please try again later.");
+    }
   };
 
   return (
@@ -33,6 +50,7 @@ export default function Quote() {
           <ServiceSelection formState={formState} updateFormState={updateFormState} />
           <BudgetSlider updateFormState={updateFormState} />
           <TimeframeSlider updateFormState={updateFormState} />
+          
           <div>
             <label for="message" class="block mb-2 font-semibold">Additional Details</label>
             <textarea
@@ -45,13 +63,29 @@ export default function Quote() {
               onInput={(e) => updateFormState('message', (e.target as HTMLTextAreaElement).value)}
             ></textarea>
           </div>
+          
           <ImageUpload onImageUpload={handleImageUpload} />
+          
+          {message && (
+            <div
+              aria-live="polite"
+              class={`p-4 rounded ${
+                status === "success" ? "bg-green-100 text-green-800" :
+                status === "error" ? "bg-red-100 text-red-800" :
+                "bg-yellow-100 text-yellow-800"
+              }`}
+            >
+              {message}
+            </div>
+          )}
+          
           <div class="flex justify-center">
             <button
               type="submit"
-              class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
+              class={`bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded ${status === "loading" ? "opacity-50 cursor-not-allowed" : ""}`}
+              disabled={status === "loading"}
             >
-              Submit
+              {status === "loading" ? "Submitting..." : "Submit"}
             </button>
           </div>
         </form>

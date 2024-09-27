@@ -1,15 +1,23 @@
 export default function About() {
   return (
-    <section id="about" class="py-16 bg-white bg-opacity-80">
+    <section id="about" class="scroll-offset scroll-offset-extra py-16 bg-white bg-opacity-80">
       <div class="container mx-auto px-4">
         <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">About Njörðr Exteriors</h2>
         <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
           <div class="md:w-1/2">
-            <img
-              src="images/sidingreno.webp"
-              alt="Exterior renovation project"
-              class="rounded-lg shadow-lg w-full h-auto object-cover"
-            />
+            <picture>
+              <source srcSet="images/funsun.webp" type="image/webp" />
+              <img
+                src="images/funsun.jpg"
+                alt="Exterior renovation project"
+                srcSet="images/funsun.webp 800w, images/funsun-400.webp 400w"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                width={800}
+                height={600}
+                class="rounded-lg shadow-lg w-full h-auto object-cover"
+                loading="lazy"
+              />
+            </picture>
           </div>
           <div class="md:w-1/2 space-y-6 bg-white bg-opacity-90 p-6 rounded-lg">
             <p class="text-lg leading-relaxed">

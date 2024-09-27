@@ -34,11 +34,28 @@ export default function Hero() {
 
   return (
     <div class="relative flex items-center justify-center h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-screen">
-      <img
-        src="images/fancywood.webp"
-        alt="Exterior renovation"
-        class="absolute inset-0 w-full h-full object-cover"
-      />
+      <picture>
+        <source
+          media="(max-width: 640px)"
+          srcSet="/images/fancywoodMobile.webp"
+          type="image/webp"
+        />
+        <source
+          media="(min-width: 641px)"
+          srcSet="/images/fancywood.webp"
+          type="image/webp"
+        />
+        <img
+          src="/images/fancywood.webp"
+          srcset="/images/fancywood-small.webp 640w, /images/fancywood-medium.webp 1024w, /images/fancywood.webp 1920w"
+          sizes="100vw"
+          alt="Exterior renovation"
+          width={1920}
+          height={1080}
+          class="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+        />
+      </picture>
       <div class="absolute inset-0 bg-black opacity-50"></div>
       <div class="relative z-10 text-center text-white px-4 sm:px-6 lg:px-8">
         <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-2 sm:mb-4 font-norse">Njördr Exteriors</h1>

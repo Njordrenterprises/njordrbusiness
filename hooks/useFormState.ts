@@ -21,5 +21,20 @@ export function useFormState() {
     }));
   };
 
-  return { formState, updateFormState };
+  const resetForm = () => {
+    setFormState({
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      services: [],
+      message: "",
+      budget: "",
+      timeframe: "",
+      completionDate: "",
+    });
+  };
+
+  return { formState, updateFormState, resetForm };
 }
+
